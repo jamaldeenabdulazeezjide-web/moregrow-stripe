@@ -1,0 +1,19 @@
+{
+  "name": "moregrow-stripe",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Stripe Payments, Invoicing and Tax for More Grow Global",
+  "scripts": {
+    "start": "node src/server.js",
+    "setup:catalog": "node scripts/setup-catalog.js",
+    "check:tax": "node scripts/check-tax.js",
+    "invoice": "node scripts/create-invoice.js"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.9",
+    "express": "^4.22.3",
+    "https-proxy-agent": "^9.1.0",
+    "stripe": "^23.1.0"
+  }
+}
