@@ -6,9 +6,26 @@ import { catalog, currency } from '../src/catalog.js';
 const taxCode = process.env.PRODUCT_TAX_CODE; // pick from https://docs.stripe.com/tax/tax-codes — confirm with your tax advisor
 
 for (const item of catalog) {
-  const existing = await stripe.prices.list({ lookup_keys: [item.key], limit: 1 });
-  if (existing.data.length) {
-    console.log(`= ${item.key} already exists (${existing.data[0].id})`);
+  const existing = await stripe.prices.list({ lookup_keys: [item.key], limit: 1, expand: ['data.product'] });
+  const current = existing.data[0];
+  if (current && current.unit_amount === item.amount) {
+    console.log(`= ${item.key} unchanged (${current.id})`);
+    continue;
+  }
+  if (current) {
+    // Prices can't be edited: create a new one, move the lookup key to it, archive the old one.
+    const price = await stripe.prices.create({
+      product: current.product.id,
+      currency,
+      unit_amount: item.amount,
+      lookup_key: item.key,
+      transfer_lookup_key: true,
+      tax_behavior: 'exclusive',
+      ...(item.interval && { recurring: { interval: item.interval } }),
+    });
+    await stripe.products.update(current.product.id, { default_price: price.id, name: item.name, description: item.description });
+    await stripe.prices.update(current.id, { active: false });
+    console.log(`~ ${item.key}: ${current.unit_amount} -> ${item.amount} (${price.id})`);
     continue;
   }
   const product = await stripe.products.create({
