@@ -1,0 +1,23 @@
+# Render Blueprint: deploys the More Grow Global payments server.
+# In Render: New + > Blueprint > pick this repo. Secrets marked sync:false are entered in the Render dashboard.
+services:
+  - type: web
+    name: moregrow-payments
+    runtime: node
+    plan: starter            # always-on; the free plan sleeps and delays Stripe webhooks
+    region: ohio
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: SITE_URL
+        value: https://moregrowglobalsearch.com
+      - key: STRIPE_TAX_ENABLED
+        value: "false"
+      - key: STRIPE_API_KEY
+        sync: false          # live restricted key (rk_live_...)
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false          # whsec_... from the Stripe webhook endpoint
