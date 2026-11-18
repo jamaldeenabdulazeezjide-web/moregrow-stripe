@@ -62,6 +62,13 @@ app.all('/checkout', express.urlencoded({ extended: false }), async (req, res) =
     // No payment_method_types: Stripe shows the best methods per customer (cards, wallets, Link, etc.)
     automatic_tax: { enabled: taxEnabled },
     tax_id_collection: { enabled: true }, // lets corporate/B2B clients add a VAT/tax ID
+    // Same intake details as the live payment links
+    name_collection: { individual: { enabled: true, optional: false } },
+    phone_number_collection: { enabled: true },
+    custom_fields: [
+      { key: 'targetroleorjobtitle', label: { type: 'custom', custom: 'Target role or job title' }, type: 'text' },
+      { key: 'linkedinprofilelink', label: { type: 'custom', custom: 'LinkedIn profile link' }, type: 'text', optional: true },
+    ],
     // Customer must tick "I agree to the Terms" (uses the Terms URL set in Stripe > Public details)
     consent_collection: { terms_of_service: 'required' },
     custom_text: {
@@ -70,7 +77,7 @@ app.all('/checkout', express.urlencoded({ extended: false }), async (req, res) =
       },
     },
     ...(price.recurring ? {} : { customer_creation: 'always', invoice_creation: { enabled: true } }),
-    success_url: `${SITE}/thank-you/?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: `${SITE}/start-your-project/?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${SITE}/services/`,
     integration_identifier: INTEGRATION_ID,
     metadata: { package: lookupKey },
